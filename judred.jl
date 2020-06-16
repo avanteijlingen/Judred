@@ -34,13 +34,11 @@ OH =        [0,  0,   0,   0,    0,     0,    0,   0,   0,  0,   0,  0,  0,    0
 #nBase =     [0,   0,  0,   0,    0,     0,    0,   0,   1,  0,   0,  0,  0,    0,   3,    0,  0,  0,   0,  0]
 
 peptides = Array{String}(undef, 20^L)
-#data = zeros(Float32, L, 6)
 APs_data = zeros(Float32, L)
 features = ["SPRatio", "NH2", "MW", "S", "LogP WW", "Z", "MaxASA", "RotRatio", "Bulkiness", "OH"]
 data = zeros(Float32, length(features), 20^L)
 
 function descriptors(pep, data_index)
-  #SP2, NH2, MW, S, LogP WW Z
   MW_H2O = 18.01528 #g/mol
   local_SP3 = 0
   for letter in pep
@@ -66,10 +64,7 @@ function descriptors(pep, data_index)
   data[3, data_index] -= MW_H2O * (length(pep)-1)
 end
 
-st = ticks() # ms
-println("Running")
 for n in range(1, step=1, stop=20^L)
-
   for i in range(1, step=1, stop=L)
     i = L - i +1
     if pep[i] == "Y"
@@ -82,7 +77,6 @@ for n in range(1, step=1, stop=20^L)
   end
   peptides[n] = peptideutils.translate1to3(join(pep))
   descriptors(pep, n)
-  #break
 end
 
 if L == 2
