@@ -2,16 +2,6 @@ using Dates
 using HDF5
 using CSV
 
-try
-  cd("C:/Users/avtei/OneDrive - University of Strathclyde/ML/scikit-learn/mordred/Judred")
-catch
-  try
-    cd("C:/Users/rudolf/OneDrive - University of Strathclyde/ML/scikit-learn/mordred/Judred")
-  catch
-    cd("/users/rkb19187/Desktop/judred")
-  end
-end
-
 include("peptideutils.jl")
 
 ticks() = round(Int64, time() * 1000)
@@ -23,7 +13,6 @@ else
 end
 
 pep = fill("A", (L,))
-
 
 letters_1 = ["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"]
 #sp2 carbons in side-chain only
@@ -96,14 +85,6 @@ for n in range(1, step=1, stop=20^L)
   #break
 end
 
-took = (ticks() - st) / 1000
-
-perpep = took / 20^L
-penta = (perpep * (20^5)) / 60
-hexa = (perpep * (20^6)) / 60
-hepta = (perpep * (20^7)) / 60 / 60
-octa = (perpep * (20^8)) / 60 / 60 / 24
-
 if L == 2
   fid=h5open("dipeptides.hdf5","w")
 elseif L == 3
@@ -124,12 +105,3 @@ fid["peptides"] = peptides
 fid["data"] = data
 fid["features"] = features
 close(fid)
-
-
-println("ofsize(data): ", (sizeof(data)/10^6)+(sizeof(features)/10^6)+(sizeof(peptides)/10^6), " MB")
-println("on ONE cpu core")
-println("Took ", took, " seconds")
-println("For pentapeptides this would take: ", penta, " mins ")
-println("For hexapeptides this would take: ", hexa, " mins ")
-println("For heptapeptides this would take: ", hepta, " hours")
-println("For octapeptides this would take: ", octa, " days")
