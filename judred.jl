@@ -1,10 +1,6 @@
-using Dates
 using HDF5
-using CSV
 
 include("peptideutils.jl")
-
-ticks() = round(Int64, time() * 1000)
 
 if length(ARGS) == 1
   L = parse(Int8, ARGS[1])
