@@ -22,7 +22,7 @@ NH2 =       [0,    0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   1,   0,   1
 MW =        [89.10, 121.16, 133.11, 147.13, 165.19, 75.07, 155.16, 131.18, 146.19, 131.18, 149.21, 132.12, 115.13, 146.15, 174.20, 105.09, 119.12, 117.15, 204.23, 181.19]
 S =         [0,    1,   0,   0,   0,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0]
 charge =    [0,    0,  -1,  -1,  0,    0,   0,   0,   1,   0,   0,   0,   0,   0,   1,   0,   0,   0,   0,   0]
-# ASP ARG and LYS are as charged side chains
+# ASP, ARG, GLU and LYS are as charged side chains
 Gwif = [0.17, -0.24, 1.23, 2.02, -1.13, 0.01, 0.17, -0.31, 0.99, -0.56, -0.23, 0.42, 0.45, 0.58, 0.81, 0.13, 0.14, 0.07, -1.85, -0.94, ] #kcal / mol
 Gwoct = [0.5, -0.02, 3.64, 3.63, -1.71, 1.15, 0.11, -1.12, 2.8, -1.25, -0.67, 0.85, 0.14, 0.77, 1.81, 0.46, 0.25, -0.46, -2.09, -0.71, ] #kcal / mol
 #Tien et al. 2013 (theory)
@@ -59,8 +59,6 @@ function descriptors(pep, data_index)
   end
   data[1, data_index] = data[1, data_index] / local_SP3
   data[8, data_index] = data[8, data_index] / length(pep)
-  #data[N,6] = data[N,6] / length(pep)
-  #data[N,9] = data[N,9] / length(pep)
   data[3, data_index] -= MW_H2O * (length(pep)-1)
 end
 
