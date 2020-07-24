@@ -47,7 +47,7 @@ OH =        [0,  0,   0,   0,    0,     0,    0,   0,   0,  0,   0,  0,  0,    0
 peptides = Array{String}(undef, 20^L)
 #data = zeros(Float32, L, 6)
 APs_data = zeros(Float32, L)
-features = ["SPRatio", "NH2", "MW", "S", "LogP WW", "Z", "MaxASA", "RotRatio", "Bulkiness", "OH"]
+features = ["SP2", "NH2", "MW", "S", "LogP WW", "Z", "MaxASA", "RotRatio", "Bulkiness", "OH"]
 data = zeros(Float32, length(features), 20^L)
 
 function descriptors(pep, data_index)
@@ -66,14 +66,10 @@ function descriptors(pep, data_index)
     data[5, data_index] += (Gwif[index] - Gwoct[index])
     data[6, data_index] += charge[index]
     data[7, data_index] += MaxASA[index]
-    #data[8, data_index] = RotRatio[index]
     data[9, data_index] += bulky[index]
     data[10, data_index] += OH[index]
   end
-  data[8, data_index] = data[1, data_index] / local_SP3
-  #data[8, data_index] = data[8, data_index] / length(pep)
-  #data[N,6] = data[N,6] / length(pep)
-  #data[N,9] = data[N,9] / length(pep)
+  data[8, data_index] = data[1, data_index]/local_SP3
   data[3, data_index] -= MW_H2O * (length(pep)-1)
 end
 
