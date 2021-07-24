@@ -56,7 +56,7 @@ OH =        np.array([0,  0,   0,   0,    0,     0,    0,   0,   0,  0,   0,  0,
 #nBase =     np.array([0,   0,  0,   0,    0,     0,    0,   0,   1,  0,   0,  0,  0,    0,   3,    0,  0,  0,   0,  0])
 
 
-L = 3
+L = int(sys.argv[1])
 
 letters_1 = np.array(["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"])
 numbers = np.arange(0, len(letters_1))
