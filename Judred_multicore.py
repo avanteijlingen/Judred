@@ -19,7 +19,7 @@ try:
     progress() #Raises value error if client isn't already running
 except ValueError:
     #client = Client('127.0.0.1:8787')
-    client = Client(processes=False, threads_per_worker=1, n_workers=4, memory_limit='600MB', silence_logs='error') 
+    client = Client(processes=False, threads_per_worker=1, n_workers=4, memory_limit='1300MB', silence_logs='error') 
     print(client)
 
 
@@ -93,11 +93,17 @@ else:
 
 #dask_df[0] = [0]*(20**L)
 SP2_data = da.array(SP2[c]).sum(axis=1)
+SP2_data = da.array(SP2_data.compute()) # by keeping it inside a da.array memory will not overflow
+#SP2_data.to_zarr("SP2_data.zarr")
+#client.cancel(SP2_data)
+#del SP2_data
+#SP2_data.to_hdf5("SP2_data.h5")
+
 #sss = SP2_data.compute(num_workers = 1)
 #gc.collect()
-NH2_data = da.array(NH2[c]).sum(axis=1)
+#NH2_data = da.array(NH2[c]).sum(axis=1)
 #xsss = NH2_data.compute(num_workers = 1)
-MW_data = da.array(MW[c]).sum(axis=1)
+#MW_data = da.array(MW[c]).sum(axis=1)
 #dsss = NH2_data.compute(num_workers = 1)
 
 
