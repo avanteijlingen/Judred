@@ -19,7 +19,7 @@ try:
     progress() #Raises value error if client isn't already running
 except ValueError:
     #client = Client('127.0.0.1:8787')
-    client = Client(processes=False, threads_per_worker=1, n_workers=4, memory_limit='1300MB', silence_logs='error') 
+    client = Client(processes=False, threads_per_worker=1, n_workers=2, memory_limit='6000MB', silence_logs='error') 
     print(client)
 
 
@@ -92,37 +92,43 @@ else:
 #dask_df = dd.from_dask_array(data)
 
 #dask_df[0] = [0]*(20**L)
+    
+# Do biggest tasks first so the final 1-D array is collected first to keep more memory free later down the line
+LogPWW_data = da.array(da.array(Gwif[c]) - da.array(Gwoct[c]))
+LogPWW_data = LogPWW_data.sum(axis=1)
+LogPWW_data = da.array(LogPWW_data.compute())
+
 SP2_data = da.array(SP2[c]).sum(axis=1)
 SP2_data = da.array(SP2_data.compute()) # by keeping it inside a da.array memory will not overflow
-#SP2_data.to_zarr("SP2_data.zarr")
-#client.cancel(SP2_data)
-#del SP2_data
-#SP2_data.to_hdf5("SP2_data.h5")
 
-#sss = SP2_data.compute(num_workers = 1)
-#gc.collect()
-#NH2_data = da.array(NH2[c]).sum(axis=1)
-#xsss = NH2_data.compute(num_workers = 1)
-#MW_data = da.array(MW[c]).sum(axis=1)
-#dsss = NH2_data.compute(num_workers = 1)
-
-
-
-sys.exit()
-
-S_data = da.array(S[peptide_numbers]).sum(axis=1)
-
-LogPWW_data = da.array(Gwif[peptide_numbers]) - da.array(Gwoct[peptide_numbers])
-LogPWW_data = LogPWW_data.sum(axis=1)
-
-Z_data = da.array(charge[peptide_numbers]).sum(axis=1)
-MaxASA_data = da.array(MaxASA[peptide_numbers]).sum(axis=1)
-
-RotRatio_data = da.array(SP3[peptide_numbers]).sum(axis=1)
+RotRatio_data = da.array(SP3[c]).sum(axis=1)
 RotRatio_data = da.array(SP2_data / RotRatio_data)
+RotRatio_data = da.array(RotRatio_data.compute())
 
-bulky_data = da.array(bulky[peptide_numbers]).sum(axis=1)
-OH_data = da.array(OH[peptide_numbers]).sum(axis=1)
+NH2_data = da.array(NH2[c]).sum(axis=1)
+NH2_data = da.array(NH2_data.compute())
+
+MW_data = da.array(MW[c]).sum(axis=1)
+MW_data = da.array(MW_data.compute())
+
+S_data = da.array(S[c]).sum(axis=1)
+S_data = da.array(S_data.compute())
+
+Z_data = da.array(charge[c]).sum(axis=1)
+Z_data = da.array(Z_data.compute())
+
+MaxASA_data = da.array(MaxASA[c]).sum(axis=1)
+MaxASA_data = da.array(MaxASA_data.compute())
+
+
+bulky_data = da.array(bulky[c]).sum(axis=1)
+bulky_data = da.array(bulky_data.compute())
+
+OH_data = da.array(OH[c]).sum(axis=1)
+OH_data = da.array(OH_data.compute())
+
+
+
 
 data = da.vstack((SP2_data, NH2_data, MW_data, S_data, LogPWW_data, Z_data,
                   MaxASA_data, RotRatio_data, bulky_data, OH_data)).T
@@ -132,7 +138,8 @@ data = da.vstack((SP2_data, NH2_data, MW_data, S_data, LogPWW_data, Z_data,
 #x = data.compute()
 #np.save(Num2Word[L]+"peptides_raw.npy", x)
 
-
+Jparameters = dd.from_dask_array(data, columns=features)#.compute()
+Jparameters.to_parquet(Num2Word[L]+"peptides.parquet")
 
 #Jparameters = dd.from_dask_array(data, columns=features).compute()
 #Jparameters = Jparameters.set_index(peptides)
@@ -142,6 +149,9 @@ data = da.vstack((SP2_data, NH2_data, MW_data, S_data, LogPWW_data, Z_data,
 
 print(Num2Word[L]+"peptides dataset done in", round(time.time()-st, 3), "s")
 
+
+a="""
 for file in [Num2Word[L]+"peptide_names.npy", Num2Word[L]+"peptide_numbers.npy"]:
     if os.path.exists(file):
         os.remove(file)
+"""
