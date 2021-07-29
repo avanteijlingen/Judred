@@ -4,7 +4,7 @@ Judred is a peptide specific molecular descriptor generator, it is loosely based
 
 
 
-This programme is first used in the Journal of Chemical Theory and Computation article "Beyond tripeptides": PLACE_HOLDER
+This programme is first used in the Journal of Chemical Theory and Computation article "Beyond tripeptides": https://doi.org/10.1021/acs.jctc.1c00159
 
 ## Example usage
 
