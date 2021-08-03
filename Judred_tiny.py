@@ -74,8 +74,6 @@ indexes = np.rollaxis(indexes, 0, L + 1)
 indexes = indexes.reshape(-1, L)
 print("indexes:", indexes.nbytes/1024/1024, "MB")
 
-sys.exit()
-
 fname = Num2Word[L].lower()+"peptides.parquet"
 a="""
 index = [(20**L)-2, (20**L)-1]
