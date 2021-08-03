@@ -24,9 +24,8 @@ Jparameters = pandas.read_parquet(Num2Word[L]+"peptides.parquet")
 print(Jparameters)
 
 print(sys.getsizeof(Jparameters)/1024/1024, "MB")
-Jparameters = Jparameters.astype(np.float16, copy=False)
-#Jparameters = Jparameters.astype(np.float32, copy=False)
+Jparameters["MW"] = Jparameters["MW"].astype(np.float16)
+Jparameters["LogP WW"] = Jparameters["LogP WW"].astype(np.float16)
+Jparameters["RotRatio"] = Jparameters["RotRatio"].astype(np.float16)
+Jparameters["Bulkiness"] = Jparameters["Bulkiness"].astype(np.float16)
 print(sys.getsizeof(Jparameters)/1024/1024, "MB")
-
-Jdata = Jparameters.values
-print(sys.getsizeof(Jdata)/1024/1024, "MB")
