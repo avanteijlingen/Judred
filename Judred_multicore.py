@@ -11,7 +11,8 @@ import numpy as np
 from dask.distributed import Client, progress
 import dask.dataframe as dd
 import dask.array as da
-import pyarrow as pa
+#import fastparquet
+
 
 st = time.time()
 
@@ -19,7 +20,7 @@ try:
     progress() #Raises value error if client isn't already running
 except ValueError:
     #client = Client('127.0.0.1:8787')
-    client = Client(processes=False, threads_per_worker=1, n_workers=2, memory_limit='6000MB', silence_logs='error') 
+    client = Client(processes=False, threads_per_worker=1, n_workers=2, memory_limit='3000MB', silence_logs='error') 
     print(client)
 
 
@@ -92,7 +93,9 @@ else:
 #dask_df = dd.from_dask_array(data)
 
 #dask_df[0] = [0]*(20**L)
-    
+peptides = da.array(["".join(x) for x in letters_1[c]])
+#sys.exit()
+
 # Do biggest tasks first so the final 1-D array is collected first to keep more memory free later down the line
 LogPWW_data = da.array(da.array(Gwif[c]) - da.array(Gwoct[c]))
 LogPWW_data = LogPWW_data.sum(axis=1)
@@ -138,8 +141,13 @@ data = da.vstack((SP2_data, NH2_data, MW_data, S_data, LogPWW_data, Z_data,
 #x = data.compute()
 #np.save(Num2Word[L]+"peptides_raw.npy", x)
 
-Jparameters = dd.from_dask_array(data, columns=features)#.compute()
-Jparameters.to_parquet(Num2Word[L]+"peptides.parquet")
+Jparameters = dd.from_dask_array(data, columns=features).compute()
+#del data
+#del LogP
+Jparameters = Jparameters.set_index(peptides.compute())
+Jparameters = Jparameters.astype(np.float32)
+
+#Jparameters.to_parquet(Num2Word[L]+"peptides.parquet")
 
 #Jparameters = dd.from_dask_array(data, columns=features).compute()
 #Jparameters = Jparameters.set_index(peptides)
