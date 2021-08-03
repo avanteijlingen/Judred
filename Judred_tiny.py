@@ -69,11 +69,12 @@ bulky =     np.array([11.50, 13.46, 11.68, 13.57, 19.80, 3.4, 13.69, 21.40, 15.7
 OH =        np.array([0,  0,   0,   0,    0,     0,    0,   0,   0,  0,   0,  0,  0,    0,   0,  1,  1,    0,   0,  1], dtype=np.int8)
     
 L = int(sys.argv[1])
-a = np.indices((len(numbers),) * L, dtype=np.int8)
-b = np.rollaxis(a, 0, L + 1)
-c = b.reshape(-1, L)
-print("c:", c.nbytes/1024/1024, "MB")
+indexes = np.indices((len(numbers),) * L, dtype=np.int8)
+indexes = np.rollaxis(indexes, 0, L + 1)
+indexes = indexes.reshape(-1, L)
+print("indexes:", indexes.nbytes/1024/1024, "MB")
 
+sys.exit()
 
 fname = Num2Word[L].lower()+"peptides.parquet"
 a="""
@@ -104,7 +105,7 @@ with pq.ParquetWriter(fname, table.schema) as writer:
     for i in range(int((20**L)/chunksize)):
         pd_table = pandas.DataFrame(y, columns=features, index=np.arange(0,chunksize))
         
-        peptide_numbers = c[i*chunksize:(i+1)*chunksize]
+        peptide_numbers = indexes[i*chunksize:(i+1)*chunksize]
         pd_table["SP2"] = SP2[peptide_numbers].sum(axis=1).astype(np.uint8)
         pd_table["NH2"] = NH2[peptide_numbers].sum(axis=1).astype(np.uint8)
         pd_table["MW"] = MW[peptide_numbers].sum(axis=1).astype(np.float32)
