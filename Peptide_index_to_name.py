@@ -5,46 +5,44 @@ Created on Tue Aug  3 16:47:52 2021
 
 @author: rkb19187
 """
-import peptideutils as pu
 import numpy as np
-import sys
+import sys, itertools
+
 
 L = 4
-size = 20**L
-step = int(size/20)
-above_size = int(size/20)
-steps = np.array([i*step for i in range(20)])
-Ls = pu.peptideutils_letters1
 
-peptides = pu.GenerateDatasetIndex(L)
 
-test = 999
-if test >= size:
-    print("No peptide this large in the dataset")
-    sys.exit()
-    
-print(peptides[test], end=" - ")
-
-solution = []
-
-letter_i = np.where(steps <= test)[0][-1]
-letter = pu.peptideutils_letters1[letter_i]
-solution.append(letter)
-
-while len(solution) < L:
-    test = test%step
-    step = int(step/20)
+def index2pep(index, Length):
+    size = 20**Length
+    if index >= size:
+        print("No peptide this large in the dataset")
+        return None
+    letters_1 = list("ACDEFGHIKLMNPQRSTVWY")
+    step = int(size/20)
+    above_size = int(size/20)
     steps = np.array([i*step for i in range(20)])
-    if test <= above_size/20 and len(solution) < L-1:
-        letter = "A"
-        #print(test <= above_size/20)
-    else:
-        letter_i = np.where(steps <= test)[0][-1]
-        letter = pu.peptideutils_letters1[letter_i]
-        #print(letter_i, letter)
-    above_size = int(above_size/20)
-    
+    solution = []
+    letter_i = np.where(steps <= index)[0][-1]
+    letter = letters_1[letter_i]
     solution.append(letter)
+    while len(solution) < Length:
+        index = index%step
+        step = int(step/20)
+        steps = np.array([i*step for i in range(20)])
+        if index <= above_size/20 and len(solution) < Length-1:
+            letter = "A"
+            #print(index <= above_size/20)
+        else:
+            letter_i = np.where(steps <= index)[0][-1]
+            letter = letters_1[letter_i]
+            #print(letter_i, letter)
+        above_size = int(above_size/20)
+        solution.append(letter)
+    return "".join(solution)
 
-
-print("".join(solution))
+letters_1 = list("ACDEFGHIKLMNPQRSTVWY")
+letters_set = [letters_1]*L
+Validation = ["".join(x) for x in list(itertools.product(*letters_set))]
+for i in range(1000):
+    print(Validation[i], end=" - ")
+    print(index2pep(i, L))
