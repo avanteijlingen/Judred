@@ -9,7 +9,7 @@ import numpy as np
 import sys, itertools
 
 
-L = 2
+L = 4
 
 def pep2index(peptide):
     L = len(peptide)
@@ -39,11 +39,13 @@ def index2pep(index, Length):
     solution.append(letter)
     while len(solution) < Length:
         index = index%step
+        #print("index:", index)
         step = int(step/20)
-        steps = np.array([i*step for i in range(20)])
-        if index <= above_size/20 and len(solution) < Length-1:
+        steps = np.array([(i*step) for i in range(20)])
+        #print(steps)
+        if index < above_size/20 and len(solution) < Length-1:
             letter = "A"
-            #print(index <= above_size/20)
+            #print("index < above_size/20")
         else:
             letter_i = np.where(steps <= index)[0][-1]
             letter = letters_1[letter_i]
@@ -56,15 +58,30 @@ letters_1 = list("ACDEFGHIKLMNPQRSTVWY")
 letters_set = [letters_1]*L
 Validation = ["".join(x) for x in list(itertools.product(*letters_set))]
 a="""
-for i in [2105]:
+for i in [0, 20, 400]:
     print(i)
     print(Validation[i], end=" - ")
     pep = index2pep(i, L)
     print(pep)
     index = pep2index(pep)
     print(index)
+    print("#"*35)
 #"""
-    
+
+a="""
+numbers = []
 for pep in Validation:
     index = pep2index(pep)
-    print(pep, index)
+    numbers.append(index)
+print(len(Validation), "vs", np.unique(numbers).shape[0])
+#"""
+
+#a="""
+peptides = []
+for index in range(20**L):
+    pep = index2pep(index, Length=4)
+    peptides.append(pep)
+    if pep == "AAAA":
+        print(pep, index)
+print(len(Validation), "vs", np.unique(peptides).shape[0])
+#"""
