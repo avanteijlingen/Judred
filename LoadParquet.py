@@ -17,9 +17,12 @@ Num2Word = {1:"AminoAcids",
             7:"Hepta",
             8:"Octa"}
 
-L = 2
+L = 6
 
 Jparameters = pandas.read_parquet(Num2Word[L].lower()+"peptides_normalized.parquet")
+if Jparameters.shape[0] != 20**L:
+    print("Jparameters is missing rows", Jparameters.shape[0], "vs", 20**L)
+    sys.exit()
 print(Jparameters)
 print("index type:", Jparameters.index.dtype)
 if Jparameters.shape[0] == 0:
@@ -41,7 +44,7 @@ for col in ["MW", "S"]:
     print(col, "unique values:",  np.unique(Jparameters[col]).shape[0])
 Jparameters = Jparameters.astype(np.float16)
 print(np.float16)
-for col in Jparameters.columns:
+for col in ["MW", "S"]:
     print(col, "unique values:",  np.unique(Jparameters[col]).shape[0])
 
     
