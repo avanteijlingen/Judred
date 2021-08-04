@@ -17,7 +17,7 @@ Num2Word = {1:"AminoAcids",
             7:"Hepta",
             8:"Octa"}
 
-L = 3
+L = 2
 
 Jparameters = pandas.read_parquet(Num2Word[L].lower()+"peptides_normalized.parquet")
 print(Jparameters)

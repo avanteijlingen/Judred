@@ -146,7 +146,8 @@ with pq.ParquetWriter(fname, table.schema) as writer:
         pd_table["MaxASA"] = pd_table["MaxASA"] - np.float32(1.0)
         
         pd_table["SP2"] = SP2[peptide_numbers].sum(axis=1) 
-        pd_table["RotRatio"] = (pd_table["SP2"]/(SP3[peptide_numbers].sum(axis=1))) 
+        pd_table["RotRatio"] = (pd_table["SP2"]/(SP3[peptide_numbers].sum(axis=1)))
+        pd_table["RotRatio"] = np.nan_to_num(pd_table["RotRatio"].values, copy=True)
         pd_table["RotRatio"] = (pd_table["RotRatio"] / RotRatio_max) - np.float32(1.0)
         pd_table["SP2"] = (pd_table["SP2"] / SP2_max) - np.float32(1.0)
         
