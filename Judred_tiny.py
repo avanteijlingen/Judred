@@ -30,6 +30,9 @@ Num2Word = {1:"AminoAcids",
             7:"Hepta",
             8:"Octa"}
 
+L = int(sys.argv[1])
+fname = Num2Word[L].lower()+"peptides_normalized.parquet"
+fname_memmap = Num2Word[L].lower()+"peptides_indexes.memmap"
 
 letters_1 = np.array(["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"])
 numbers = np.arange(0, len(letters_1), dtype=np.uint8)
@@ -62,12 +65,21 @@ if use_gpu:
     MaxASA_gpu = cp.array(MaxASA)
     bulky_gpu = cp.array(bulky)
     OH_gpu = cp.array(OH)
-                          
-L = int(sys.argv[1])
-indexes = np.indices((len(numbers),) * L, dtype=np.uint8)
-indexes = np.rollaxis(indexes, 0, L + 1)
-indexes = indexes.reshape(-1, L)
-print("indexes:", indexes.nbytes/1024/1024, "MB")
+
+if not os.path.exists(fname_memmap):
+    indexes = np.indices((len(numbers),) * L, dtype=np.uint8, sparse=False)
+    indexes = np.rollaxis(indexes, 0, L + 1)
+    indexes_memmap = np.memmap(fname_memmap, dtype=np.uint8, mode='w+', shape=(20**L, L))
+    indexes_memmap[:] = indexes.reshape(-1, L)
+    print("indexes:", indexes.nbytes/1024/1024, "MB")
+    
+    del indexes_memmap
+    print("indexes memmap saved to:", fname_memmap)
+    sys.exit()
+else:
+    indexes = np.memmap(fname_memmap, dtype=np.uint8, mode='r', shape=(20**L, L))
+    #print(indexes[-2])
+    
 
 SP2_max = ((max(SP2)*L)/2.0).astype(np.float32) 
 polytryptophan_index = [18]*L
@@ -107,9 +119,7 @@ if use_gpu:
     bulky_gpu_max = (max(bulky_gpu)*L).astype(cp.float32)
     OH_gpu_max = ((max(OH_gpu)*L)/2.0).astype(cp.float32)
 
-fname = Num2Word[L].lower()+"peptides_normalized.parquet"
 
-#a="""
 chunksize = min([math.floor((20**L)/2), 25600000])
 y = np.zeros((chunksize, 10), dtype=np.float32)
 pd_table = pandas.DataFrame(y, columns=features, index=np.arange(0,chunksize))
@@ -271,5 +281,7 @@ if use_gpu:
     del logp_gpu_gwif
     del chunk
     cp._default_memory_pool.free_all_blocks()
-    
+
+del indexes
+
 print(Num2Word[L].lower()+"peptides done in", round(sum(times), 3), "s use_gpu:", use_gpu)
