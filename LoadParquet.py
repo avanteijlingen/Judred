@@ -21,6 +21,7 @@ L = 3
 
 Jparameters = pandas.read_parquet(Num2Word[L].lower()+"peptides_normalized.parquet")
 print(Jparameters)
+print("index type:", Jparameters.index.dtype)
 if Jparameters.shape[0] == 0:
     sys.exit()
 print(sys.getsizeof(Jparameters)/1024/1024, "MB")
