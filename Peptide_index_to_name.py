@@ -11,7 +11,18 @@ import sys, itertools
 
 L = 3
 
-
+def pep2index(peptide):
+    L = len(peptide)
+    size = int(20**L)
+    solution = 0
+    letters_1 = np.array(list("ACDEFGHIKLMNPQRSTVWY"))
+    for i in range(1, L+1):
+        index = np.where(letters_1 == peptide[L-1])[0][0]
+        number = int((size/(20**i)) * index)
+        solution += number
+    return str(solution)
+        
+        
 def index2pep(index, Length):
     size = 20**Length
     if index >= size:
@@ -43,6 +54,10 @@ def index2pep(index, Length):
 letters_1 = list("ACDEFGHIKLMNPQRSTVWY")
 letters_set = [letters_1]*L
 Validation = ["".join(x) for x in list(itertools.product(*letters_set))]
-for i in [842]:
+for i in [2105]:
+    print(i)
     print(Validation[i], end=" - ")
-    print(index2pep(i, L))
+    pep = index2pep(i, L)
+    print(pep)
+    index = pep2index(pep)
+    print(index)
