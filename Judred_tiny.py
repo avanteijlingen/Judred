@@ -74,13 +74,14 @@ indexes = np.rollaxis(indexes, 0, L + 1)
 indexes = indexes.reshape(-1, L)
 print("indexes:", indexes.nbytes/1024/1024, "MB")
 
-SP2_max = (max(SP2)*L).astype(np.float32)
+SP2_max = ((max(SP2)*L)/2.0).astype(np.float32) 
 polytryptophan_index = [18]*L
 RotRatio_max = SP2[polytryptophan_index].sum() / SP3[polytryptophan_index].sum() 
-NH2_max = (max(NH2)*L).astype(np.float32)
+RotRatio_max = np.float32(RotRatio_max/2.0)
+NH2_max = ((max(NH2)*L)/2.0).astype(np.float32)
 MW_min = (min(MW)*L).astype(np.float32)
 MW_max = (max(MW)*L).astype(np.float32)
-S_max = (max(S)*L).astype(np.float32)
+S_max = ((max(S)*L)/2.0).astype(np.float32)
 Z_min = (min(charge)*L).astype(np.float32)
 Z_max = (max(charge)*L).astype(np.float32)
 polyasparticacid_index = [2]*L
@@ -91,13 +92,13 @@ MaxASA_min = (min(MaxASA)*L).astype(np.float32)
 MaxASA_max = (max(MaxASA)*L).astype(np.float32)
 bulky_min = (min(bulky)*L).astype(np.float32)
 bulky_max = (max(bulky)*L).astype(np.float32)
-OH_max = (max(OH)*L).astype(np.float32)
+OH_max = ((max(OH)*L)/2.0).astype(np.float32)
 
 
 fname = Num2Word[L].lower()+"peptides_normalized.parquet"
 
 #a="""
-chunksize = min([math.floor((20**L)/10), 1000000])
+chunksize = min([math.floor((20**L)/10), 10000000])
 y = np.zeros((chunksize, 10), dtype=np.float32)
 pd_table = pandas.DataFrame(y, columns=features, index=np.arange(0,chunksize))
 pd_table["SP2"] = pd_table["SP2"].astype(np.float32)
@@ -118,40 +119,48 @@ with pq.ParquetWriter(fname, table.schema) as writer:
         peptide_numbers = indexes[i*chunksize:(i+1)*chunksize]
         # Where the min value is 0 we can do a faster normalization
         
-        pd_table["NH2"] = NH2[peptide_numbers].sum(axis=1) / NH2_max
-        
+        pd_table["NH2"] = NH2[peptide_numbers].sum(axis=1)
+        pd_table["NH2"] = (pd_table["NH2"] / NH2_max) - np.float32(1.0)
         
         pd_table["MW"] = MW[peptide_numbers].sum(axis=1) 
         pd_table["MW"] = pd_table["MW"] - MW_min
-        pd_table["MW"] = pd_table["MW"] / (MW_max - MW_min)
-
-        pd_table["S"] = S[peptide_numbers].sum(axis=1) / S_max
+        pd_table["MW"] = pd_table["MW"] / ((MW_max - MW_min)/2).astype(np.float32)
+        pd_table["MW"] = pd_table["MW"] - np.float32(1.0)
+        
+        pd_table["S"] = S[peptide_numbers].sum(axis=1) 
+        pd_table["S"] = (pd_table["S"] / S_max) - np.float32(1.0)
         
         pd_table["LogP WW"] = (Gwif[peptide_numbers] - Gwoct[peptide_numbers]).sum(axis=1)
         pd_table["LogP WW"] = pd_table["LogP WW"] - LogP_WW_min
-        pd_table["LogP WW"] = pd_table["LogP WW"] / (LogP_WW_max - LogP_WW_min)
+        pd_table["LogP WW"] = pd_table["LogP WW"] / ((LogP_WW_max - LogP_WW_min)/2.0).astype(np.float32)
+        pd_table["LogP WW"] = pd_table["LogP WW"] - np.float32(1.0)
         
         pd_table["Z"] = charge[peptide_numbers].sum(axis=1) 
         pd_table["Z"] = pd_table["Z"] - Z_min
-        pd_table["Z"] = pd_table["Z"] / (Z_max - Z_min)
+        pd_table["Z"] = pd_table["Z"] / ((Z_max - Z_min)/2.0).astype(np.float32)
+        pd_table["Z"] = pd_table["Z"] - np.float32(1.0)
         
         pd_table["MaxASA"] = MaxASA[peptide_numbers].sum(axis=1) 
         pd_table["MaxASA"] = pd_table["MaxASA"] - MaxASA_min
-        pd_table["MaxASA"] = pd_table["MaxASA"] / (MaxASA_max - MaxASA_min)
+        pd_table["MaxASA"] = pd_table["MaxASA"] / ((MaxASA_max - MaxASA_min)/2.0).astype(np.float32)
+        pd_table["MaxASA"] = pd_table["MaxASA"] - np.float32(1.0)
         
         pd_table["SP2"] = SP2[peptide_numbers].sum(axis=1) 
-        pd_table["RotRatio"] = (pd_table["SP2"]/(SP3[peptide_numbers].sum(axis=1))) / RotRatio_max
-        pd_table["SP2"] = pd_table["SP2"] / SP2_max
+        pd_table["RotRatio"] = (pd_table["SP2"]/(SP3[peptide_numbers].sum(axis=1))) 
+        pd_table["RotRatio"] = (pd_table["RotRatio"] / RotRatio_max) - np.float32(1.0)
+        pd_table["SP2"] = (pd_table["SP2"] / SP2_max) - np.float32(1.0)
         
         pd_table["Bulkiness"] = bulky[peptide_numbers].sum(axis=1)
         pd_table["Bulkiness"] = pd_table["Bulkiness"] - bulky_min
-        pd_table["Bulkiness"] = pd_table["Bulkiness"] / (bulky_max - bulky_min)
+        pd_table["Bulkiness"] = pd_table["Bulkiness"] / ((bulky_max - bulky_min)/2.0).astype(np.float32)
+        pd_table["Bulkiness"] = pd_table["Bulkiness"] - np.float32(1.0)
         
-        pd_table["OH"] = OH[peptide_numbers].sum(axis=1) / OH_max
+        pd_table["OH"] = OH[peptide_numbers].sum(axis=1) 
+        pd_table["OH"] = (pd_table["OH"] / OH_max) - np.float32(1.0)
         
         table = pa.Table.from_pandas(pd_table, preserve_index=False)
         writer.write_table(table)
         
-        print("{:.3e}".format(chunksize*(i+1)), "/", "{:.3e}".format(20**L))
+        print("{:.2e}".format(chunksize*(i+1)), "/", "{:.2e}".format(20**L))
 
 #"""

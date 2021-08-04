@@ -20,7 +20,7 @@ def pep2index(peptide):
         index = np.where(letters_1 == peptide[L-1])[0][0]
         number = int((size/(20**i)) * index)
         solution += number
-    return str(solution)
+    return solution
         
         
 def index2pep(index, Length):

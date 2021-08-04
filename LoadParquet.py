@@ -19,15 +19,29 @@ Num2Word = {1:"AminoAcids",
 
 L = 3
 
-Jparameters = pandas.read_parquet(Num2Word[L].lower()+"peptides_NORMALIZED.parquet")
-#
+Jparameters = pandas.read_parquet(Num2Word[L].lower()+"peptides_normalized.parquet")
 print(Jparameters)
 if Jparameters.shape[0] == 0:
     sys.exit()
 print(sys.getsizeof(Jparameters)/1024/1024, "MB")
 
+Jparameters["SP2"] = Jparameters["SP2"].astype(np.float16)
+Jparameters["NH2"] = Jparameters["NH2"].astype(np.float16)
+Jparameters["S"] = Jparameters["S"].astype(np.float16)
+Jparameters["Z"] = Jparameters["Z"].astype(np.float16)
+Jparameters["OH"] = Jparameters["OH"].astype(np.float16)
+print(sys.getsizeof(Jparameters)/1024/1024, "MB")
+
 for col in Jparameters.columns:
-    print(col, Jparameters[col].max(), Jparameters[col].min())
+    print(col, Jparameters[col].max(), Jparameters[col].min(), Jparameters[col].dtype)
+
+print(np.float32)
+for col in ["MW", "S"]:
+    print(col, "unique values:",  np.unique(Jparameters[col]).shape[0])
+Jparameters = Jparameters.astype(np.float16)
+print(np.float16)
+for col in Jparameters.columns:
+    print(col, "unique values:",  np.unique(Jparameters[col]).shape[0])
 
     
 a="""
