@@ -9,7 +9,7 @@ import numpy as np
 import sys, itertools
 
 
-L = 4
+L = 3
 
 
 def index2pep(index, Length):
@@ -43,6 +43,6 @@ def index2pep(index, Length):
 letters_1 = list("ACDEFGHIKLMNPQRSTVWY")
 letters_set = [letters_1]*L
 Validation = ["".join(x) for x in list(itertools.product(*letters_set))]
-for i in range(1000):
+for i in [842]:
     print(Validation[i], end=" - ")
     print(index2pep(i, L))

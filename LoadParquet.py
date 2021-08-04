@@ -17,15 +17,20 @@ Num2Word = {1:"AminoAcids",
             7:"Hepta",
             8:"Octa"}
 
-L = 6
+L = 3
 
-Jparameters = pandas.read_parquet(Num2Word[L]+"peptides.parquet")
-
+Jparameters = pandas.read_parquet(Num2Word[L].lower()+"peptides_NORMALIZED.parquet")
+#
 print(Jparameters)
+if Jparameters.shape[0] == 0:
+    sys.exit()
+print(sys.getsizeof(Jparameters)/1024/1024, "MB")
 
+for col in Jparameters.columns:
+    print(col, Jparameters[col].max(), Jparameters[col].min())
+
+    
+a="""
+Jparameters = Jparameters.astype(np.float16)
 print(sys.getsizeof(Jparameters)/1024/1024, "MB")
-Jparameters["MW"] = Jparameters["MW"].astype(np.float16)
-Jparameters["LogP WW"] = Jparameters["LogP WW"].astype(np.float16)
-Jparameters["RotRatio"] = Jparameters["RotRatio"].astype(np.float16)
-Jparameters["Bulkiness"] = Jparameters["Bulkiness"].astype(np.float16)
-print(sys.getsizeof(Jparameters)/1024/1024, "MB")
+"""
