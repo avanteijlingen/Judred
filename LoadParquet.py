@@ -5,8 +5,9 @@ Created on Sat Jul 24 03:29:47 2021
 @author: avtei
 """
 
-import pandas, sys
+import pandas, sys, time
 import numpy as np
+import pyarrow.parquet as pq
 
 Num2Word = {1:"AminoAcids",
             2:"Di",
@@ -17,9 +18,34 @@ Num2Word = {1:"AminoAcids",
             7:"Hepta",
             8:"Octa"}
 
-L = 5
+L = 6
+fname = Num2Word[L].lower()+"peptides_normalized.parquet"
 
-Jparameters = pandas.read_parquet(Num2Word[L].lower()+"peptides_normalized.parquet")
+parquet_file = pq.ParquetFile(fname)
+
+nRowGroups = parquet_file.num_row_groups
+
+index_lower = 0
+chunksize = -1
+for i in range(nRowGroups):
+    table = parquet_file.read_row_group(i)
+    table = table.to_pandas()
+    if chunksize == -1:
+        chunksize = table.shape[0]
+        index_upper = chunksize
+    if chunksize > table.shape[0]: #sometimes there is a smaller one at the end
+        index_upper = table.shape[0] + index_lower
+    index = np.arange(index_lower, index_upper)
+    table = table.set_index(index)
+    print(table)
+    time.sleep(1) # let the ram recover quickly
+    index_lower += chunksize
+    index_upper += chunksize
+
+sys.exit()
+
+
+Jparameters = pandas.read_parquet(fname)
 if Jparameters.shape[0] != 20**L:
     print("Jparameters is missing rows", Jparameters.shape[0], "vs", 20**L)
     sys.exit()
