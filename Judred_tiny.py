@@ -11,6 +11,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+
 try:
     import cupy as cp
     mempool = cp.get_default_memory_pool()
@@ -18,7 +19,6 @@ try:
     use_gpu = True
 except:
     use_gpu = False
-
 
 
 Num2Word = {1:"AminoAcids",
@@ -31,6 +31,8 @@ Num2Word = {1:"AminoAcids",
             8:"Octa"}
 
 L = int(sys.argv[1])
+steps = np.array([20**i for i in range(L-1, -1, -1)], dtype=np.uint64)
+
 fname = Num2Word[L].lower()+"peptides_normalized.parquet"
 fname_memmap = Num2Word[L].lower()+"peptides_indexes.memmap"
 
@@ -54,6 +56,7 @@ bulky =     np.array([11.50, 13.46, 11.68, 13.57, 19.80, 3.4, 13.69, 21.40, 15.7
 OH =        np.array([0,  0,   0,   0,    0,     0,    0,   0,   0,  0,   0,  0,  0,    0,   0,  1,  1,    0,   0,  1], dtype=np.float32)
 
 if use_gpu:
+    steps_gpu = cp.array(steps)
     SP2_gpu = cp.array(SP2)
     SP3_gpu = cp.array(SP3)
     NH2_gpu = cp.array(NH2)
@@ -66,6 +69,7 @@ if use_gpu:
     bulky_gpu = cp.array(bulky)
     OH_gpu = cp.array(OH)
 
+a="""
 if not os.path.exists(fname_memmap):
     indexes = np.indices((len(numbers),) * L, dtype=np.uint8, sparse=False)
     indexes = np.rollaxis(indexes, 0, L + 1)
@@ -79,7 +83,13 @@ if not os.path.exists(fname_memmap):
 else:
     indexes = np.memmap(fname_memmap, dtype=np.uint8, mode='r', shape=(20**L, L))
     #print(indexes[-2])
-    
+#"""
+
+a="""
+indexes = np.indices((len(numbers),) * L, dtype=np.uint8, sparse=False)
+indexes = np.rollaxis(indexes, 0, L + 1)
+indexes = indexes.reshape(-1, L)
+#"""
 
 SP2_max = ((max(SP2)*L)/2.0).astype(np.float32) 
 polytryptophan_index = [18]*L
@@ -136,7 +146,7 @@ pd_table["OH"] = pd_table["OH"].astype(np.float32)
 table = pa.Table.from_pandas(pd_table, preserve_index=False)
 
 times = []
-use_gpu = True
+#use_gpu = False
 print("Use GPU:", use_gpu)
 with pq.ParquetWriter(fname, table.schema) as writer:
     iterations = (20**L)//chunksize
@@ -148,16 +158,27 @@ with pq.ParquetWriter(fname, table.schema) as writer:
             chunksize = 20**L - index_lower
             index_upper = 20**L
             y = np.zeros((chunksize, 10), dtype=np.float32)
-        #print(index_lower, "-", index_upper, "|", 20**L, chunksize)
+        print(index_lower, "-", index_upper, "|", 20**L, chunksize)
         #print("="*45)
         #continue
         st = time.time()
         # Where the min value is 0 we can do a faster normalization
         pd_table = pandas.DataFrame(y, columns=features, index=np.arange(0,chunksize))
         
-        peptide_numbers = indexes[index_lower:index_upper]
-        peptide_numbers_gpu = cp.array(peptide_numbers)
-        
+        # For the larger datasets the indices become to large so we have to chunk that too
+        if L > 4:
+            index = np.arange(index_lower, index_upper, dtype=np.uint64)
+            peptide_numbers = np.zeros((chunksize, L), dtype=np.uint8)
+            for i in range(L):
+                peptide_numbers[:,i] = index // steps[i]
+                v = (index//steps[i])
+                v = v * steps[i]
+                index = index - v
+        else:
+            peptide_numbers = indexes[index_lower:index_upper]
+            if use_gpu:
+                peptide_numbers_gpu = cp.array(peptide_numbers)
+            
         if use_gpu:
             chunk = NH2_gpu[peptide_numbers_gpu]
             chunk = chunk.sum(axis=1)
@@ -282,6 +303,6 @@ if use_gpu:
     del chunk
     cp._default_memory_pool.free_all_blocks()
 
-del indexes
+
 
 print(Num2Word[L].lower()+"peptides done in", round(sum(times), 3), "s use_gpu:", use_gpu)

@@ -17,7 +17,7 @@ Num2Word = {1:"AminoAcids",
             7:"Hepta",
             8:"Octa"}
 
-L = 6
+L = 5
 
 Jparameters = pandas.read_parquet(Num2Word[L].lower()+"peptides_normalized.parquet")
 if Jparameters.shape[0] != 20**L:
