@@ -10,7 +10,7 @@ import pandas, sys, os, time, math
 import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
-
+from datetime import datetime
 
 try:
     import cupy as cp
@@ -114,7 +114,7 @@ if use_gpu:
     OH_gpu_max = ((max(OH_gpu)*L)/2.0).astype(cp.float32)
 
 
-chunksize = min([math.floor((20**L)/2), 100000]) # 25600000
+chunksize = min([math.floor((20**L)/2), 25600000])
 y = np.zeros((chunksize, 10), dtype=np.float32)
 pd_table = pandas.DataFrame(y, columns=features, index=np.arange(0,chunksize))
 pd_table["SP2"] = pd_table["SP2"].astype(np.float32)
@@ -287,7 +287,7 @@ with pq.ParquetWriter(fname, table.schema) as writer:
         times.append(time.time()-st)
         eta = sum(times) / (iteration+1)
         eta = (eta*iterations) - (eta*(iteration+1))
-        eta = round(eta)
+        eta = datetime.fromtimestamp(eta).strftime("%I:%M:%S")
         print("{:.2e}".format(index_upper), "/", "{:.2e}".format(20**L), round(times[-1], 3), "s eta:", eta, "s")
         
         #break
