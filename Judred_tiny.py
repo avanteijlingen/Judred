@@ -168,10 +168,11 @@ with pq.ParquetWriter(fname, table.schema) as writer:
                     v = v * steps[i]
                     index = index - v
         else:
-            peptide_numbers = indices[index_lower:index_upper]
             if use_gpu:
-                peptide_numbers_gpu = cp.array(peptide_numbers)
-            
+                peptide_numbers_gpu = cp.array(indices[index_lower:index_upper])
+            else:
+                peptide_numbers = indices[index_lower:index_upper]
+                
         if use_gpu:
             chunk = NH2_gpu[peptide_numbers_gpu]
             chunk = chunk.sum(axis=1)
@@ -224,7 +225,7 @@ with pq.ParquetWriter(fname, table.schema) as writer:
             chunk = chunk - 1
             pd_table["Z"] = chunk.get()
         else:
-            pd_table["Z"] = charge[peptide_numbers].sum(axis=1) 
+            pd_table["Z"] = charge[peptide_numbers_gpu].sum(axis=1) 
             pd_table["Z"] = pd_table["Z"] - Z_min
             pd_table["Z"] = pd_table["Z"] / ((Z_max - Z_min)/2.0).astype(np.float32)
             pd_table["Z"] = pd_table["Z"] - np.float32(1.0)
@@ -244,7 +245,7 @@ with pq.ParquetWriter(fname, table.schema) as writer:
         
         if use_gpu:
             SP2_chunk = SP2_gpu[peptide_numbers_gpu].sum(axis=1)
-            chunk = SP3_gpu[peptide_numbers].sum(axis=1)
+            chunk = SP3_gpu[peptide_numbers_gpu].sum(axis=1)
             chunk = SP2_chunk / chunk
             #print((cp.isnan(RotRatio_chunk) == True).any())
             chunk = cp.nan_to_num(chunk)
