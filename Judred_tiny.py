@@ -34,7 +34,7 @@ L = int(sys.argv[1])
 steps = np.array([20**i for i in range(L-1, -1, -1)], dtype=np.uint64)
 
 fname = Num2Word[L].lower()+"peptides_normalized.parquet"
-fname_memmap = Num2Word[L].lower()+"peptides_indexes.memmap"
+#fname_memmap = Num2Word[L].lower()+"peptides_indexes.memmap"
 
 letters_1 = np.array(["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"])
 numbers = np.arange(0, len(letters_1), dtype=np.uint8)
@@ -69,27 +69,11 @@ if use_gpu:
     bulky_gpu = cp.array(bulky)
     OH_gpu = cp.array(OH)
 
-a="""
-if not os.path.exists(fname_memmap):
-    indexes = np.indices((len(numbers),) * L, dtype=np.uint8, sparse=False)
-    indexes = np.rollaxis(indexes, 0, L + 1)
-    indexes_memmap = np.memmap(fname_memmap, dtype=np.uint8, mode='w+', shape=(20**L, L))
-    indexes_memmap[:] = indexes.reshape(-1, L)
-    print("indexes:", indexes.nbytes/1024/1024, "MB")
-    
-    del indexes_memmap
-    print("indexes memmap saved to:", fname_memmap)
-    sys.exit()
-else:
-    indexes = np.memmap(fname_memmap, dtype=np.uint8, mode='r', shape=(20**L, L))
-    #print(indexes[-2])
-#"""
+if L <= 4:
+    indices = np.indices((len(numbers),) * L, dtype=np.uint8, sparse=False)
+    indices = np.rollaxis(indices, 0, L + 1)
+    indices = indices.reshape(-1, L)
 
-a="""
-indexes = np.indices((len(numbers),) * L, dtype=np.uint8, sparse=False)
-indexes = np.rollaxis(indexes, 0, L + 1)
-indexes = indexes.reshape(-1, L)
-#"""
 
 SP2_max = ((max(SP2)*L)/2.0).astype(np.float32) 
 polytryptophan_index = [18]*L
@@ -184,7 +168,7 @@ with pq.ParquetWriter(fname, table.schema) as writer:
                     v = v * steps[i]
                     index = index - v
         else:
-            peptide_numbers = indexes[index_lower:index_upper]
+            peptide_numbers = indices[index_lower:index_upper]
             if use_gpu:
                 peptide_numbers_gpu = cp.array(peptide_numbers)
             
