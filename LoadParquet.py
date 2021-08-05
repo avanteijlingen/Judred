@@ -21,26 +21,30 @@ Num2Word = {1:"AminoAcids",
 L = 6
 fname = Num2Word[L].lower()+"peptides_normalized.parquet"
 
+
 parquet_file = pq.ParquetFile(fname)
+chunksize = parquet_file.read_row_group(0).to_pandas().shape[0]
+print("chunksize:", chunksize)
 
 nRowGroups = parquet_file.num_row_groups
 
-index_lower = 0
-chunksize = -1
-for i in range(nRowGroups):
-    table = parquet_file.read_row_group(i)
-    table = table.to_pandas()
-    if chunksize == -1:
-        chunksize = table.shape[0]
-        index_upper = chunksize
+IndexToFind = 2560001 #16842105
+row_group = IndexToFind//chunksize
+
+index_lower = chunksize * row_group
+index_upper = chunksize * (row_group+1)
+
+
+table = parquet_file.read_row_group(row_group)
+table = table.to_pandas()
+
+if row_group == nRowGroups:
     if chunksize > table.shape[0]: #sometimes there is a smaller one at the end
         index_upper = table.shape[0] + index_lower
-    index = np.arange(index_lower, index_upper)
-    table = table.set_index(index)
-    print(table)
-    time.sleep(1) # let the ram recover quickly
-    index_lower += chunksize
-    index_upper += chunksize
+
+index = np.arange(index_lower, index_upper)
+table = table.set_index(index)
+print(table)
 
 sys.exit()
 

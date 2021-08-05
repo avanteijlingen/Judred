@@ -9,7 +9,7 @@ import numpy as np
 import sys, itertools
 
 
-L = 4
+L = 6
 
 def pep2index(peptide):
     L = len(peptide)
@@ -56,7 +56,7 @@ def index2pep(index, Length):
 
 letters_1 = list("ACDEFGHIKLMNPQRSTVWY")
 letters_set = [letters_1]*L
-Validation = ["".join(x) for x in list(itertools.product(*letters_set))]
+#Validation = ["".join(x) for x in list(itertools.product(*letters_set))]
 a="""
 for i in [0, 20, 400]:
     print(i)
@@ -76,7 +76,7 @@ for pep in Validation:
 print(len(Validation), "vs", np.unique(numbers).shape[0])
 #"""
 
-#a="""
+a="""
 peptides = []
 for index in range(20**L):
     pep = index2pep(index, Length=4)
