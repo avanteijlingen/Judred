@@ -167,13 +167,22 @@ with pq.ParquetWriter(fname, table.schema) as writer:
         
         # For the larger datasets the indices become to large so we have to chunk that too
         if L > 4:
-            index = np.arange(index_lower, index_upper, dtype=np.uint64)
-            peptide_numbers = np.zeros((chunksize, L), dtype=np.uint8)
-            for i in range(L):
-                peptide_numbers[:,i] = index // steps[i]
-                v = (index//steps[i])
-                v = v * steps[i]
-                index = index - v
+            if use_gpu:
+                index = cp.arange(index_lower, index_upper, dtype=np.uint64)
+                peptide_numbers_gpu = cp.zeros((chunksize, L), dtype=np.uint8)
+                for i in range(L):
+                    peptide_numbers_gpu[:,i] = index // steps[i]
+                    v = (index//steps_gpu[i])
+                    v = v * steps_gpu[i]
+                    index = index - v
+            else:
+                index = np.arange(index_lower, index_upper, dtype=np.uint64)
+                peptide_numbers = np.zeros((chunksize, L), dtype=np.uint8)
+                for i in range(L):
+                    peptide_numbers[:,i] = index // steps[i]
+                    v = (index//steps[i])
+                    v = v * steps[i]
+                    index = index - v
         else:
             peptide_numbers = indexes[index_lower:index_upper]
             if use_gpu:
