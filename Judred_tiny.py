@@ -114,7 +114,7 @@ if use_gpu:
     OH_gpu_max = ((max(OH_gpu)*L)/2.0).astype(cp.float32)
 
 
-chunksize = min([math.floor((20**L)/2), 25600000])
+chunksize = min([math.floor((20**L)/2), 100000]) # 25600000
 y = np.zeros((chunksize, 10), dtype=np.float32)
 pd_table = pandas.DataFrame(y, columns=features, index=np.arange(0,chunksize))
 pd_table["SP2"] = pd_table["SP2"].astype(np.float32)
@@ -135,9 +135,9 @@ print("Use GPU:", use_gpu)
 with pq.ParquetWriter(fname, table.schema) as writer:
     iterations = (20**L)//chunksize
     iterations += int(bool((20**L)%chunksize))
-    for i in range(iterations):
-        index_lower = i*chunksize
-        index_upper = (i+1)*chunksize
+    for iteration in range(iterations):
+        index_lower = iteration*chunksize
+        index_upper = (iteration+1)*chunksize
         if index_upper > 20**L:
             chunksize = 20**L - index_lower
             index_upper = 20**L
@@ -285,7 +285,10 @@ with pq.ParquetWriter(fname, table.schema) as writer:
         writer.write_table(table)
         
         times.append(time.time()-st)
-        print("{:.2e}".format(index_upper), "/", "{:.2e}".format(20**L), round(times[-1], 3), "s")
+        eta = sum(times) / (iteration+1)
+        eta = (eta*iterations) - (eta*(iteration+1))
+        eta = round(eta)
+        print("{:.2e}".format(index_upper), "/", "{:.2e}".format(20**L), round(times[-1], 3), "s eta:", eta, "s")
         
         #break
 
