@@ -69,13 +69,20 @@ OH_max = ((max(OH)*L)/2.0).astype(np.float32)
 
 
 
-LogP_filter = 0.0
-
-for LogP in np.arange(LogP_WW_min, LogP_WW_max, 0.1):
+for LogP in np.arange(LogP_WW_min, LogP_WW_max, 0.2):
     print(LogP, end=" - ")
     LogP -= LogP_WW_min
     LogP /= ((LogP_WW_max - LogP_WW_min)/2.0)
     LogP -= 1.0
     LogP = LogP.astype(np.float32)
     print(LogP)
+
+print("Z")
+for Z in [-1, 0, 1]: #np.arange(Z_min, Z_max, 0.2):
+    print(Z, end=" - ")
+    Z -= Z_min
+    Z /= ((Z_max - Z_min)/2.0)
+    Z -= 1.0
+    Z = Z.astype(np.float32)
+    print(Z)
 
