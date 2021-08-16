@@ -115,6 +115,7 @@ if use_gpu:
 
 
 chunksize = min([math.floor((20**L)/2), 2560000])
+#chunksize = (20**3)
 y = np.zeros((chunksize, 10), dtype=np.float32)
 pd_table = pandas.DataFrame(y, columns=features, index=np.arange(0,chunksize))
 pd_table["SP2"] = pd_table["SP2"].astype(np.float32)
@@ -225,7 +226,7 @@ with pq.ParquetWriter(fname, table.schema) as writer:
             chunk = chunk - 1
             pd_table["Z"] = chunk.get()
         else:
-            pd_table["Z"] = charge[peptide_numbers_gpu].sum(axis=1) 
+            pd_table["Z"] = charge[peptide_numbers].sum(axis=1) 
             pd_table["Z"] = pd_table["Z"] - Z_min
             pd_table["Z"] = pd_table["Z"] / ((Z_max - Z_min)/2.0).astype(np.float32)
             pd_table["Z"] = pd_table["Z"] - np.float32(1.0)
