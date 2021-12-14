@@ -38,7 +38,7 @@ fname = Num2Word[L].lower()+"peptides_normalized.parquet"
 
 letters_1 = np.array(["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"])
 numbers = np.arange(0, len(letters_1), dtype=np.uint8)
-features = ["SP2", "NH2", "MW", "S", "LogP WW", "Z", "MaxASA", "RotRatio", "Bulkiness", "OH"]
+features = ["SP2", "NH2", "MW", "S", "LogP WW", "Z", "MaxASA", "RotRatio", "Bulkiness", "OH", "pI"]
 #sp2 carbons in side-chain only
 SP2 =       np.array([0,    0,   1,   1,   6,   0,   3,   0,   0,   0,   0,   1,   0,   1,   1,   0,   0,   0,   8,   6], dtype=np.float32)
 SP3 =       np.array([1,    1,   1,   2,   1,   0,   1,   4,   4,   4,   3,   1,   3,   2,   3,   1,   2,   3,   1,   1], dtype=np.float32)
@@ -54,6 +54,7 @@ MaxASA =    np.array([129, 167, 193, 223, 240, 104, 224, 197, 236, 201, 224, 195
 # Zimmerman J.M., Eliezer N., Simha R. J. Theor. Biol. 21:170-201(1968).
 bulky =     np.array([11.50, 13.46, 11.68, 13.57, 19.80, 3.4, 13.69, 21.40, 15.71, 21.4, 16.25, 12.82, 17.43, 14.45, 14.28, 9.47, 15.77, 21.57, 21.67, 18.03], dtype=np.float32)
 OH =        np.array([0,  0,   0,   0,    0,     0,    0,   0,   0,  0,   0,  0,  0,    0,   0,  1,  1,    0,   0,  1], dtype=np.float32)
+pI =        np.array([6.11,5.15,2.98,3.08,5.76,6.06, 7.64, 6.04, 9.47, 6.04, 5.71, 5.43, 6.30, 5.65, 11.5,5.07, 5.60,6.02,5.88,5.63], dtype=np.float32)
 
 if use_gpu:
     steps_gpu = cp.array(steps)
@@ -68,6 +69,7 @@ if use_gpu:
     MaxASA_gpu = cp.array(MaxASA)
     bulky_gpu = cp.array(bulky)
     OH_gpu = cp.array(OH)
+    pI_gpu = cp.array(pI)
 
 if L <= 4:
     indices = np.indices((len(numbers),) * L, dtype=np.uint8, sparse=False)
@@ -94,6 +96,8 @@ MaxASA_max = (max(MaxASA)*L).astype(np.float32)
 bulky_min = (min(bulky)*L).astype(np.float32)
 bulky_max = (max(bulky)*L).astype(np.float32)
 OH_max = ((max(OH)*L)/2.0).astype(np.float32)
+pI_min = (min(pI)).astype(np.float32)
+pI_max = (max(pI)).astype(np.float32)
 
 if use_gpu:
     SP2_gpu_max = ((max(SP2_gpu)*L)/2.0).astype(np.float32) 
@@ -112,11 +116,14 @@ if use_gpu:
     bulky_gpu_min = (min(bulky_gpu)*L).astype(cp.float32)
     bulky_gpu_max = (max(bulky_gpu)*L).astype(cp.float32)
     OH_gpu_max = ((max(OH_gpu)*L)/2.0).astype(cp.float32)
+    pI_gpu_min = (min(pI)).astype(cp.float32)
+    pI_gpu_max = (max(pI)).astype(cp.float32)
+
 
 
 chunksize = min([math.floor((20**L)/2), 2560000])
 #chunksize = (20**3)
-y = np.zeros((chunksize, 10), dtype=np.float32)
+y = np.zeros((chunksize, 11), dtype=np.float32)
 pd_table = pandas.DataFrame(y, columns=features, index=np.arange(0,chunksize))
 pd_table["SP2"] = pd_table["SP2"].astype(np.float32)
 pd_table["NH2"] = pd_table["NH2"].astype(np.float32)
@@ -128,6 +135,7 @@ pd_table["MaxASA"] = pd_table["MaxASA"].astype(np.float32)
 pd_table["RotRatio"] = pd_table["RotRatio"].astype(np.float32)
 pd_table["Bulkiness"] = pd_table["Bulkiness"].astype(np.float32)
 pd_table["OH"] = pd_table["OH"].astype(np.float32)
+pd_table["pI"] = pd_table["pI"].astype(np.float32)
 table = pa.Table.from_pandas(pd_table, preserve_index=False)
 
 times = []
@@ -142,7 +150,7 @@ with pq.ParquetWriter(fname, table.schema) as writer:
         if index_upper > 20**L:
             chunksize = 20**L - index_lower
             index_upper = 20**L
-            y = np.zeros((chunksize, 10), dtype=np.float32)
+            y = np.zeros((chunksize, 11), dtype=np.float32)
         print(index_lower, "-", index_upper, "|", 20**L, chunksize)
         #print("="*45)
         #continue
@@ -282,6 +290,15 @@ with pq.ParquetWriter(fname, table.schema) as writer:
         else:
             pd_table["OH"] = OH[peptide_numbers].sum(axis=1) 
             pd_table["OH"] = (pd_table["OH"] / OH_max) - np.float32(1.0)
+            
+        if use_gpu:
+            chunk = pI_gpu[peptide_numbers_gpu]
+            chunk = chunk.sum(axis=1)
+            chunk = (chunk / OH_gpu_max ) - 1
+            pd_table["pI"] = chunk.get()
+        else:
+            pd_table["pI"] = pI[peptide_numbers].sum(axis=1) 
+            pd_table["pI"] = (pd_table["pI"] / pI_max) - np.float32(1.0)
         
         table = pa.Table.from_pandas(pd_table, preserve_index=False)
         writer.write_table(table)
@@ -289,7 +306,7 @@ with pq.ParquetWriter(fname, table.schema) as writer:
         times.append(time.time()-st)
         eta = sum(times) / (iteration+1)
         eta = (eta*iterations) - (eta*(iteration+1))
-        eta_str = datetime.fromtimestamp(eta).strftime("%I:%M:%S")
+        eta_str = datetime.fromtimestamp(eta).strftime("%H:%M:%S")
         print("{:.2e}".format(index_upper), "/", "{:.2e}".format(20**L), round(times[-1], 3), "s eta:", eta_str)
         
         #break

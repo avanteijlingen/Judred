@@ -9,7 +9,7 @@ import numpy as np
 import sys, itertools
 
 
-L = 6
+L = 8
 
 def pep2index(peptide):
     L = len(peptide)
@@ -57,6 +57,15 @@ def index2pep(index, Length):
 letters_1 = list("ACDEFGHIKLMNPQRSTVWY")
 letters_set = [letters_1]*L
 #Validation = ["".join(x) for x in list(itertools.product(*letters_set))]
+
+np.random.seed(78345)
+import pandas
+HPO_set = np.random.randint(0, 20**8, 100, dtype=np.int64)
+peptides = [index2pep(x, 8) for x in HPO_set]
+HPO_set = pandas.DataFrame(peptides, index=HPO_set, columns=["peptide"])
+HPO_set["nmol"] = [80]*HPO_set.shape[0]
+print(HPO_set)
+
 a="""
 for i in [0, 20, 400]:
     print(i)
