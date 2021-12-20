@@ -293,11 +293,11 @@ with pq.ParquetWriter(fname, table.schema) as writer:
             
         if use_gpu:
             chunk = pI_gpu[peptide_numbers_gpu]
-            chunk = chunk.sum(axis=1)
+            chunk = chunk.mean(axis=1)
             chunk = (chunk / OH_gpu_max ) - 1
             pd_table["pI"] = chunk.get()
         else:
-            pd_table["pI"] = pI[peptide_numbers].sum(axis=1) 
+            pd_table["pI"] = pI[peptide_numbers].mean(axis=1) 
             pd_table["pI"] = (pd_table["pI"] / pI_max) - np.float32(1.0)
         
         table = pa.Table.from_pandas(pd_table, preserve_index=False)
