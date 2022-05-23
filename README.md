@@ -35,9 +35,11 @@ The HDF5 database contain (left) a matrix of values contain the values of each d
 
 ## Version 2
 
-The unofficial version 2 (Judred_tiny.py) is written in Python and no longer uses the HDF5 file format. By removing the peptide labels and switching to the Apache Parquet format for data output we can reduce the dataset size by a factor of 13.
+The unofficial version 2 (Judred_tiny.py) is written in Python and no longer uses the HDF5 file format. By removing the peptide labels and switching to the Apache Parquet format for data output we can reduce the dataset size by a factor of 13. This can be done as the specific peptide to which the parameters represent can be calculated from the parameters position in the dataset.
 
-This can be done as the specific peptide to which the parameters represent can be calculated from the parameters position in the dataset.
+We have alse added the [isoelectric point (pI)](https://nanotempertech.com/nanopedia/isoelectric-point/) parameter as we found this to be a useful descriptor in an upcoming publication.
+
+Since this is a complete dataset and all limits are know for each parameter is terms of min/min values we have 'cooked-in' scaling such that all values are saved between 0/-1 and 1 so there is no longer a need to scale after loading the dataset. As such the new filenaming scheme is: "tetrapeptides_normalized.parquet" instead of the old "tetrapeptides.hdf5".
 
 Another improvement that has been made is the addition of GPU calculations. The arguments for the program are now:
 
@@ -48,4 +50,8 @@ python Judred_tiny.py 4 10000
 
 Where the chunksize refers to how many values to calculate simulatneously (or as many as your processors will allow) - this in an important parameter particularly in the GPU computational as a lot of the 'processing' time is just moving data to and from the GPU so you want to set the chunck size to as large as your system will allow.
 
-![chucksize_10k_cpu.PNG](chucksize_10k_cpu.PNG)
+See the following on how this effects run time (10k/100k cpu/gpu):
+![chucksize_10k_cpu.PNG =1000x20](chucksize_10k_cpu.PNG)
+![chucksize_10k_cpu.PNG](chucksize_100k_cpu.PNG)
+![chucksize_10k_cpu.PNG](chucksize_10k_gpu.PNG)
+![chucksize_10k_cpu.PNG](chucksize_100k_gpu.PNG)
