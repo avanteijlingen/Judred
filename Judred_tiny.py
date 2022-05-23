@@ -121,7 +121,8 @@ if use_gpu:
 
 
 
-chunksize = min([math.floor((20**L)/2), 2560000])
+#chunksize = min([math.floor((20**L)/2), 2560000])
+chunksize = int(sys.argv[2])
 #chunksize = (20**3)
 y = np.zeros((chunksize, 11), dtype=np.float32)
 pd_table = pandas.DataFrame(y, columns=features, index=np.arange(0,chunksize))
