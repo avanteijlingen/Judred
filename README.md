@@ -51,7 +51,7 @@ python Judred_tiny.py 4 10000
 Where the chunksize refers to how many values to calculate simulatneously (or as many as your processors will allow) - this in an important parameter particularly in the GPU computational as a lot of the 'processing' time is just moving data to and from the GPU so you want to set the chunck size to as large as your system will allow.
 
 See the following on how this effects run time (10k/100k cpu/gpu):
-![chucksize_10k_cpu.PNG =1000x20](chucksize_10k_cpu.PNG)
+![chucksize_10k_cpu.PNG](chucksize_10k_cpu.PNG)
 ![chucksize_10k_cpu.PNG](chucksize_100k_cpu.PNG)
 ![chucksize_10k_cpu.PNG](chucksize_10k_gpu.PNG)
 ![chucksize_10k_cpu.PNG](chucksize_100k_gpu.PNG)
