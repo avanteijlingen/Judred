@@ -13,6 +13,7 @@ import peptideutils as pu
 
 print("THIS NEW/SPECIAL VERSION INCLUDES HELICAL PENALTY")
 
+DoMinMaxScaling = False
 pd_table = pandas.DataFrame()
 # CPU
 
@@ -42,30 +43,30 @@ Helical_penalty = np.array([0.00,0.68,0.69,0.40,0.54,1.0,0.61,0.41,0.26,0.21,0.2
 
 L = 2
 
-
-SP2_max = ((max(SP2)*L)/2.0).astype(np.float32) 
-polytryptophan_index = [18]*L
-RotRatio_max = SP2[polytryptophan_index].sum() / SP3[polytryptophan_index].sum() 
-RotRatio_max = np.float32(RotRatio_max/2.0)
-NH2_max = ((max(NH2)*L)/2.0).astype(np.float32)
-MW_min = (min(MW)*L).astype(np.float32)
-MW_max = (max(MW)*L).astype(np.float32)
-S_max = ((max(S)*L)/2.0).astype(np.float32)
-Z_min = (min(charge)*L).astype(np.float32)
-Z_max = (max(charge)*L).astype(np.float32)
-polyasparticacid_index = [2]*L
-LogP_WW_min = (Gwif[polyasparticacid_index] - Gwoct[polyasparticacid_index]).sum()
-polyisoleucine_index = [7]*L
-LogP_WW_max = (Gwif[polyisoleucine_index] - Gwoct[polyisoleucine_index]).sum()
-MaxASA_min = (min(MaxASA)*L).astype(np.float32)
-MaxASA_max = (max(MaxASA)*L).astype(np.float32)
-bulky_min = (min(bulky)*L).astype(np.float32)
-bulky_max = (max(bulky)*L).astype(np.float32)
-OH_max = ((max(OH)*L)/2.0).astype(np.float32)
-pI_min = (min(pI)).astype(np.float32)
-pI_max = (max(pI)).astype(np.float32)
-Helical_penalty_max = (max(Helical_penalty)).astype(np.float32)
-Helical_penalty_min = (min(Helical_penalty)).astype(np.float32)
+if DoMinMaxScaling:
+    SP2_max = ((max(SP2)*L)/2.0).astype(np.float32) 
+    polytryptophan_index = [18]*L
+    RotRatio_max = SP2[polytryptophan_index].sum() / SP3[polytryptophan_index].sum() 
+    RotRatio_max = np.float32(RotRatio_max/2.0)
+    NH2_max = ((max(NH2)*L)/2.0).astype(np.float32)
+    MW_min = (min(MW)*L).astype(np.float32)
+    MW_max = (max(MW)*L).astype(np.float32)
+    S_max = ((max(S)*L)/2.0).astype(np.float32)
+    Z_min = (min(charge)*L).astype(np.float32)
+    Z_max = (max(charge)*L).astype(np.float32)
+    polyasparticacid_index = [2]*L
+    LogP_WW_min = (Gwif[polyasparticacid_index] - Gwoct[polyasparticacid_index]).sum()
+    polyisoleucine_index = [7]*L
+    LogP_WW_max = (Gwif[polyisoleucine_index] - Gwoct[polyisoleucine_index]).sum()
+    MaxASA_min = (min(MaxASA)*L).astype(np.float32)
+    MaxASA_max = (max(MaxASA)*L).astype(np.float32)
+    bulky_min = (min(bulky)*L).astype(np.float32)
+    bulky_max = (max(bulky)*L).astype(np.float32)
+    OH_max = ((max(OH)*L)/2.0).astype(np.float32)
+    pI_min = (min(pI)).astype(np.float32)
+    pI_max = (max(pI)).astype(np.float32)
+    Helical_penalty_max = (max(Helical_penalty)).astype(np.float32)
+    Helical_penalty_min = (min(Helical_penalty)).astype(np.float32)
 
 
 def index2pep(index, Length):
@@ -111,52 +112,63 @@ for i,pep in enumerate(peptides):
                     
 
 pd_table["Judred_NH2"] = NH2[peptide_numbers].sum(axis=1)
-pd_table["Judred_NH2"] = (pd_table["Judred_NH2"] / NH2_max) - np.float32(1.0)
+if DoMinMaxScaling:
+    pd_table["Judred_NH2"] = (pd_table["Judred_NH2"] / NH2_max) - np.float32(1.0)
         
 
 pd_table["Judred_MW"] = MW[peptide_numbers].sum(axis=1) 
-pd_table["Judred_MW"] = pd_table["Judred_MW"] - MW_min
-pd_table["Judred_MW"] = pd_table["Judred_MW"] / ((MW_max - MW_min)/2).astype(np.float32)
-pd_table["Judred_MW"] = pd_table["Judred_MW"] - np.float32(1.0)
+if DoMinMaxScaling:
+    pd_table["Judred_MW"] = pd_table["Judred_MW"] - MW_min
+    pd_table["Judred_MW"] = pd_table["Judred_MW"] / ((MW_max - MW_min)/2).astype(np.float32)
+    pd_table["Judred_MW"] = pd_table["Judred_MW"] - np.float32(1.0)
 
 pd_table["Judred_S"] = S[peptide_numbers].sum(axis=1) 
-pd_table["Judred_S"] = (pd_table["Judred_S"] / S_max) - np.float32(1.0)
+if DoMinMaxScaling:
+    pd_table["Judred_S"] = (pd_table["Judred_S"] / S_max) - np.float32(1.0)
 
 pd_table["Judred_LogP WW"] = (Gwif[peptide_numbers] - Gwoct[peptide_numbers]).sum(axis=1)
-pd_table["Judred_LogP WW"] = pd_table["Judred_LogP WW"] - LogP_WW_min
-pd_table["Judred_LogP WW"] = pd_table["Judred_LogP WW"] / ((LogP_WW_max - LogP_WW_min)/2.0).astype(np.float32)
-pd_table["Judred_LogP WW"] = pd_table["Judred_LogP WW"] - np.float32(1.0)
+if DoMinMaxScaling:
+    pd_table["Judred_LogP WW"] = pd_table["Judred_LogP WW"] - LogP_WW_min
+    pd_table["Judred_LogP WW"] = pd_table["Judred_LogP WW"] / ((LogP_WW_max - LogP_WW_min)/2.0).astype(np.float32)
+    pd_table["Judred_LogP WW"] = pd_table["Judred_LogP WW"] - np.float32(1.0)
         
  
 pd_table["Judred_Z"] = charge[peptide_numbers].sum(axis=1) 
-pd_table["Judred_Z"] = pd_table["Judred_Z"] - Z_min
-pd_table["Judred_Z"] = pd_table["Judred_Z"] / ((Z_max - Z_min)/2.0).astype(np.float32)
-pd_table["Judred_Z"] = pd_table["Judred_Z"] - np.float32(1.0)
+if DoMinMaxScaling:
+    pd_table["Judred_Z"] = pd_table["Judred_Z"] - Z_min
+    pd_table["Judred_Z"] = pd_table["Judred_Z"] / ((Z_max - Z_min)/2.0).astype(np.float32)
+    pd_table["Judred_Z"] = pd_table["Judred_Z"] - np.float32(1.0)
         
 
 pd_table["Judred_MaxASA"] = MaxASA[peptide_numbers].sum(axis=1) 
-pd_table["Judred_MaxASA"] = pd_table["Judred_MaxASA"] - MaxASA_min
-pd_table["Judred_MaxASA"] = pd_table["Judred_MaxASA"] / ((MaxASA_max - MaxASA_min)/2.0).astype(np.float32)
-pd_table["Judred_MaxASA"] = pd_table["Judred_MaxASA"] - np.float32(1.0)
+if DoMinMaxScaling:
+    pd_table["Judred_MaxASA"] = pd_table["Judred_MaxASA"] - MaxASA_min
+    pd_table["Judred_MaxASA"] = pd_table["Judred_MaxASA"] / ((MaxASA_max - MaxASA_min)/2.0).astype(np.float32)
+    pd_table["Judred_MaxASA"] = pd_table["Judred_MaxASA"] - np.float32(1.0)
 
 pd_table["Judred_SP2"] = SP2[peptide_numbers].sum(axis=1) 
 pd_table["Judred_RotRatio"] = (pd_table["Judred_SP2"]/(SP3[peptide_numbers].sum(axis=1)))
-pd_table["Judred_RotRatio"] = np.nan_to_num(pd_table["Judred_RotRatio"].values, copy=True)
-pd_table["Judred_RotRatio"] = (pd_table["Judred_RotRatio"] / RotRatio_max) - np.float32(1.0)
-pd_table["Judred_SP2"] = (pd_table["Judred_SP2"] / SP2_max) - np.float32(1.0)
+if DoMinMaxScaling:
+    pd_table["Judred_RotRatio"] = np.nan_to_num(pd_table["Judred_RotRatio"].values, copy=True)
+    pd_table["Judred_RotRatio"] = (pd_table["Judred_RotRatio"] / RotRatio_max) - np.float32(1.0)
+    pd_table["Judred_SP2"] = (pd_table["Judred_SP2"] / SP2_max) - np.float32(1.0)
         
 pd_table["Judred_Bulkiness"] = bulky[peptide_numbers].sum(axis=1)
-pd_table["Judred_Bulkiness"] = pd_table["Judred_Bulkiness"] - bulky_min
-pd_table["Judred_Bulkiness"] = pd_table["Judred_Bulkiness"] / ((bulky_max - bulky_min)/2.0).astype(np.float32)
-pd_table["Judred_Bulkiness"] = pd_table["Judred_Bulkiness"] - np.float32(1.0)
+if DoMinMaxScaling:
+    pd_table["Judred_Bulkiness"] = pd_table["Judred_Bulkiness"] - bulky_min
+    pd_table["Judred_Bulkiness"] = pd_table["Judred_Bulkiness"] / ((bulky_max - bulky_min)/2.0).astype(np.float32)
+    pd_table["Judred_Bulkiness"] = pd_table["Judred_Bulkiness"] - np.float32(1.0)
+
 
 pd_table["Judred_OH"] = OH[peptide_numbers].sum(axis=1) 
-pd_table["Judred_OH"] = (pd_table["Judred_OH"] / OH_max) - np.float32(1.0)
+if DoMinMaxScaling:
+    pd_table["Judred_OH"] = (pd_table["Judred_OH"] / OH_max) - np.float32(1.0)
 
 pd_table["Judred_pI"] = pI[peptide_numbers].mean(axis=1)         
-pd_table["Judred_pI"] = pd_table["Judred_pI"] - pI_min
-pd_table["Judred_pI"] = pd_table["Judred_pI"] / ((pI_max - pI_min)/2.0).astype(np.float32)
-pd_table["Judred_pI"] = pd_table["Judred_pI"] - np.float32(1.0)
+if DoMinMaxScaling:
+    pd_table["Judred_pI"] = pd_table["Judred_pI"] - pI_min
+    pd_table["Judred_pI"] = pd_table["Judred_pI"] / ((pI_max - pI_min)/2.0).astype(np.float32)
+    pd_table["Judred_pI"] = pd_table["Judred_pI"] - np.float32(1.0)
 
 
 #pd_table["Judred_Helical_penalty"] = Helical_penalty[peptide_numbers].sum(axis=1) 

@@ -2,4 +2,5 @@ dask-worker-space
 *.parquet
 *.memmap
 *.hdf5
+*.csv
 gpu_vs_cpu.py
