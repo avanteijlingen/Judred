@@ -3,7 +3,6 @@ dask-worker-space
 *.memmap
 *.hdf5
 *.exe
-*.csv
 gpu_vs_cpu.py
 *.gbw
 *.hess

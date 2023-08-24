@@ -5,11 +5,8 @@ Created on Thu Aug 24 13:08:32 2023
 @author: Alex
 """
 
-import pandas, sys, os, time, math, re, glob
+import pandas, sys, os, re, glob
 import numpy as np
-import pyarrow as pa
-import pyarrow.parquet as pq
-from datetime import datetime
 import orca_parser
 
 def natural_sort(l): 
@@ -18,23 +15,7 @@ def natural_sort(l):
     return sorted(l, key=alphanum_key)
 
 
-try:
-    import cupy as cp
-    mempool = cp.get_default_memory_pool()
-    mempool.set_limit(size=3*1024**3) # 3 GB
-    use_gpu = True
-except:
-    use_gpu = False
 
-
-Num2Word = {1:"AminoAcids",
-            2:"Di",
-            3:"Tri",
-            4:"Tetra",
-            5:"Penta",
-            6:"Hexa",
-            7:"Hepta",
-            8:"Octa"}
 
 peptoids = pandas.DataFrame(index=['Na', 'Nab', 'Nd', 'Ne', 'Nf', 'Nfe', 'NfeBr', 'NfeCl', "Nfex", 'Nfn', 'Nfnap', 'Nfp', 'Ni', 'Nk', 'Nke', 'Nkeqm', 'Nl', 'Nm', 'NmO', 'Nn', 'Nq', 'Nr', 'Ns', 'Nse', 'Nt', 'Nv', 'Nw', 'Nwe', 'Ny'],
                             columns=["Gwif", "Gwoct"])
