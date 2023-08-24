@@ -5,3 +5,15 @@ dask-worker-space
 *.exe
 *.csv
 gpu_vs_cpu.py
+*.gbw
+*.hess
+*.cpcm
+*.opt
+*.engrad
+*.txt
+slurm*
+*.densities
+*.inp
+*.xyz
+*.sh
+*.bak
