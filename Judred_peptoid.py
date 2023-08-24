@@ -58,6 +58,8 @@ for peptoid in letters_1:
             path = f"{folder}/{file}"
             op = orca_parser.ORCAParse(path)
             print(op.valid)
+            if not op.valid:
+                os.remove(path)
     
     
     break
