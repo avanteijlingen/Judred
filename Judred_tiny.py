@@ -126,10 +126,10 @@ if not peptoids:
     pI_min = (min(pI)).astype(np.float32)
     pI_max = (max(pI)).astype(np.float32)
 else:
-    polyasparticacid_index = [np.where(letters_1 == "Nd")[0]]*L
-    polyisoleucine_index = [np.where(letters_1 == "Ni")[0]]*L
-    
-    
+    polyasparticacid_index = [np.where(letters_1 == "Nd")[0][0]]*L
+    polyisoleucine_index = [np.where(letters_1 == "Ni")[0][0]]*L
+
+
 LogP_WW_min = (Gwif[polyasparticacid_index] - Gwoct[polyasparticacid_index]).sum()
 LogP_WW_max = (Gwif[polyisoleucine_index] - Gwoct[polyisoleucine_index]).sum()
 MaxASA_min = (min(MaxASA)*L).astype(np.float32)
@@ -162,6 +162,7 @@ if use_gpu:
 
 y = np.zeros((chunksize, len(features)), dtype=np.float32)
 pd_table = pandas.DataFrame(y, columns=features, index=np.arange(0,chunksize))
+print(pd_table)
 pd_table["SP2"] = pd_table["SP2"].astype(np.float32)
 pd_table["NH2"] = pd_table["NH2"].astype(np.float32)
 pd_table["MW"] = pd_table["MW"].astype(np.float32)
@@ -197,12 +198,13 @@ with pq.ParquetWriter(fname, table.schema) as writer:
         if index_upper > 20**L:
             chunksize = 20**L - index_lower
             index_upper = 20**L
-            y = np.zeros((chunksize, 11), dtype=np.float32)
+            y = np.zeros((chunksize, len(features)), dtype=np.float32)
         print(index_lower, "-", index_upper, "|", 20**L, chunksize)
         #print("="*45)
         #continue
         st = time.time()
         # Where the min value is 0 we can do a faster normalization
+
         pd_table = pandas.DataFrame(y, columns=features, index=np.arange(0,chunksize))
         
         # For the larger datasets the indices become to large so we have to chunk that too
