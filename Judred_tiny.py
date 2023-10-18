@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Aug  3 21:20:24 2021
 
 @author: avtei
 """
@@ -192,16 +191,16 @@ times = []
 #use_gpu = False
 print("Use GPU:", use_gpu)
 with pq.ParquetWriter(fname, table.schema) as writer:
-    iterations = (20**L)//chunksize
-    iterations += int(bool((20**L)%chunksize))
+    iterations = (numbers.shape[0]**L)//chunksize
+    iterations += int(bool((numbers.shape[0]**L)%chunksize))
     for iteration in range(iterations):
         index_lower = iteration*chunksize
         index_upper = (iteration+1)*chunksize
-        if index_upper > 20**L:
-            chunksize = 20**L - index_lower
-            index_upper = 20**L
+        if index_upper > numbers.shape[0]**L:
+            chunksize = numbers.shape[0]**L - index_lower
+            index_upper = numbers.shape[0]**L
             y = np.zeros((chunksize, len(features)), dtype=np.float32)
-        print(index_lower, "-", index_upper, "|", 20**L, chunksize)
+        print(index_lower, "-", index_upper, "|", numbers.shape[0]**L, chunksize)
         #print("="*45)
         #continue
         st = time.time()
@@ -359,7 +358,7 @@ with pq.ParquetWriter(fname, table.schema) as writer:
         eta = sum(times) / (iteration+1)
         eta = (eta*iterations) - (eta*(iteration+1))
         eta_str = datetime.fromtimestamp(eta).strftime("%H:%M:%S")
-        print("{:.2e}".format(index_upper), "/", "{:.2e}".format(20**L), round(times[-1], 3), "s eta:", eta_str)
+        print("{:.2e}".format(index_upper), "/", "{:.2e}".format(numbers.shape[0]**L), round(times[-1], 3), "s eta:", eta_str)
         
         #break
 
