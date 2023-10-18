@@ -57,6 +57,9 @@ if peptoids:
     MaxASA = peptoid_data["ASA"].values
     OH = peptoid_data["OH"].values
     features = ["SP2", "NH2", "MW", "S", "Solubility Scale", "Z", "MaxASA", "RotRatio", "OH"]
+    
+    #Check the chunksize is divisible
+    assert (peptoid_data.shape[0]**L) % chunksize == 0, "peptoid_data.shape[0]**L is not devisible by the chunksize"
 else:
     fname = Num2Word[L].lower()+"peptides_normalized.parquet"
     letters_1 = np.array(["A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y"])
@@ -79,7 +82,6 @@ else:
     OH =        np.array([0,  0,   0,   0,    0,     0,    0,   0,   0,  0,   0,  0,  0,    0,   0,  1,  1,    0,   0,  1], dtype=np.float32)
     pI =        np.array([6.11,5.15,2.98,3.08,5.76,6.06, 7.64, 6.04, 9.47, 6.04, 5.71, 5.43, 6.30, 5.65, 11.5,5.07, 5.60,6.02,5.88,5.63], dtype=np.float32)
 numbers = np.arange(0, len(letters_1), dtype=np.uint8)
-
 
 
 if use_gpu:
