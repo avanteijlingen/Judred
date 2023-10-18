@@ -31,7 +31,6 @@ Num2Word = {1:"AminoAcids",
             8:"Octa"}
 
 L = int(sys.argv[1])
-steps = np.array([20**i for i in range(L-1, -1, -1)], dtype=np.uint64)
 #chunksize = min([math.floor((20**L)/2), 2560000])
 chunksize = int(sys.argv[2])
 if len(sys.argv) > 3:
@@ -81,7 +80,7 @@ else:
     OH =        np.array([0,  0,   0,   0,    0,     0,    0,   0,   0,  0,   0,  0,  0,    0,   0,  1,  1,    0,   0,  1], dtype=np.float32)
     pI =        np.array([6.11,5.15,2.98,3.08,5.76,6.06, 7.64, 6.04, 9.47, 6.04, 5.71, 5.43, 6.30, 5.65, 11.5,5.07, 5.60,6.02,5.88,5.63], dtype=np.float32)
 numbers = np.arange(0, len(letters_1), dtype=np.uint8)
-
+steps = np.array([numbers.shape[0]**i for i in range(L-1, -1, -1)], dtype=np.uint64)
 
 if use_gpu:
     steps_gpu = cp.array(steps)
